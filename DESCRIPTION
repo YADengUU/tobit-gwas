@@ -1,12 +1,14 @@
 Package: TobitGwas
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Perform Tobit-I Regression on Genotype Data
+Version: 0.5.0
+Author: Daniel Schmitz <daniel.schmitz@igp.uu.se>
+Maintainer: Daniel Schmitz <daniel.schmitz@igp.uu.se>
+Description: This package allows you to perform censored-regression modeling
+    using the Tobit-I model on genetic data.
+    This is useful when you deal with large amounts of missing phenotype
+    measurements due to an insensitive assay.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1

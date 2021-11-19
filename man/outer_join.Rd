@@ -4,7 +4,10 @@
 \alias{outer_join}
 \title{Implements an outer join using \link[base:merge]{base::merge}.}
 \usage{
-outer_join(a, b)
+outer_join(x, y)
+}
+\arguments{
+\item{x, y}{The data frames to join.}
 }
 \value{
 An outer join of a and b

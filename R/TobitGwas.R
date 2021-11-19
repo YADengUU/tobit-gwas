@@ -18,7 +18,7 @@ regress_snp <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) 
       pheno ~ geno + covars,
       tobit(Lower=detection_limit)) %>%
     VGAM::summaryvglm(model, HDEtest = hde_test) %>%
-    coef()
+    stats::coef()
   coefficients["geno", ]
 }
 
@@ -41,8 +41,8 @@ regress_snp <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) 
 regress_all <- function(geno, pheno, covars, detection_limit, hde_test = FALSE, mc.cores = getOption("mc.cores", 2L)) {
   result <- geno %>%
     parallel::mclapply(
-      FUN = regress,
-      pheno = data_f$oest.norm,
+      FUN = regress_snp,
+      pheno = pheno,
       covars = covars,
       detection_limit = detection_limit,
       hde_test = hde_test,
@@ -77,9 +77,11 @@ extract_genotype_columns <- function(genotype_table){
 #'
 #' We need this because [base::Reduce] can't pass additional arguments to its function.
 #'
+#' @param x,y The data frames to join.
+#'
 #' @return An outer join of a and b
-outer_join <- function(a,b){
-  merge(a,b, all=TRUE)
+outer_join <- function(x,y){
+  merge(x,y, all=TRUE)
 }
 
 #' Reads raw genotype files from PLINK and combines them into a single genotype matrix.
@@ -140,7 +142,7 @@ rank_transform <- function(values, detection_limit = min(values, na.rm = TRUE), 
   tmp.1 <- (order(defined)-0.5)/length(defined)
   tmp.2 <- rep(NA,length(values))
   tmp.2[!is.na(values)] <- tmp.1
-  transformed <- qnorm(tmp.2,0,1)
+  transformed <- stats::qnorm(tmp.2,0,1)
   transformed_dt <- transformed[values <= detection_limit] %>%
     max(na.rm = TRUE)
   list(values = transformed, detection_limit = transformed_dt)
