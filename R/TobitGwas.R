@@ -29,10 +29,21 @@ regress_all <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) 
 }
 
 
+uninteresting_columns <- c("MAT", "PAT", "SEX", "PHENOTYPE")
+extract_genotype_columns <- function(genotype_table){
+  interesting_columns <- !(colnames(genotype_table) %in% uninteresting_columns)
+  genotype_table[, ..interesting_columns]
+}
+
+collect_genotypes <- function(files) {
+  files %>%
+    lapply(data.table::fread) %>%
+    lapply(extract_genotype_columns) %>%
+    Reduce(f=merge)
+}
+
 genotypes <- list.files(path="genotypes", pattern="raw", full.names=TRUE) %>%
-  lapply(data.table::fread) %>%
-  lapply(magrittr::extract, , c(1,2,7)) %>%
-  Reduce(f=merge)
+  collect_genotypes()
 
 covariates_f <- data.table::fread("~/hormone_gwas/females/covariates.txt")
 
@@ -94,15 +105,13 @@ predictor_cols_m <- !(colnames(data_m) %in% not_predictors)
 predictors_m <- data_m[, ..predictor_cols_m] %>% as.matrix()
 
 # Regression
-models_m <- parallel::mclapply(genotypes_m[, -c(1,2)], regress, data_m$oest.norm, predictors_m, detection_limit_m, mc.cores=8)
-summaries_m <- parallel::mclapply(models_m, summary, mc.cores=8)
-result_m <- lapply(summaries_m, coef) %>%
-  lapply(extract, "geno", ) %>%
-  do.call("rbind", .) %>%
-  as.data.table(keep.rownames="SNP")
 
-# Prettification
-snp_split_m <- stringr::str_split_fixed(result_m$SNP, "_", 2)
-result_m[, ID := snp_split_m[,1]]
-result_m[, A1 := snp_split_m[,2]]
+result_m <- regress_all(
+  geno = genotypes_m,
+  pheno = pheno,
+  covars = predictors_m,
+  detection_limit = detection_limit,
+  hde_test = FALSE
+)
+
 write.table(result_m, "out/results_m.txt", sep="\t", quote=F, row.names=F)
