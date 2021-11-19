@@ -41,3 +41,21 @@ collect_genotypes <- function(files) {
     lapply(extract_genotype_columns) %>%
     Reduce(f=merge)
 }
+
+read_raw_genotypes <- function(directory) {
+  list.files(path=directory, path="raw", full.names = T) %>% collect_genotypes()
+}
+
+rank_transform <- function(values, detection_limit = min(values, na.rm = TRUE), na_is_below_dt=FALSE){
+  if (na_is_below_dt){
+    values[is.na(values)] <- detection_limit
+  }
+  defined <- values[!is.na(values)]
+  tmp.1 <- (order(defined)-0.5)/length(defined)
+  tmp.2 <- rep(NA,length(values))
+  tmp.2[!is.na(values)] <- tmp.1
+  transformed <- qnorm(tmp.2,0,1)
+  transformed_dt <- transformed[values <= detection_limit] %>%
+    max(na.rm = TRUE)
+  list(pheno = transformed, detection_limit = transformed_dt)
+}
