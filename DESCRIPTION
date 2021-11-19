@@ -15,3 +15,4 @@ Imports:
     stringr,
     VGAM,
     data.table
+Roxygen: list(markdown = TRUE)
