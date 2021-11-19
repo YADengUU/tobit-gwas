@@ -1,8 +1,33 @@
-#!Rscript
-
-regress <- function(geno, pheno, covars, lower) {
-  VGAM::vglm( pheno ~ geno + covars, tobit(Lower=lower))
+regress_snp <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) {
+  coefficients <-
+    VGAM::vglm(
+      pheno ~ geno + covars,
+      tobit(Lower=detection_limit)) %>%
+    VGAM::summaryvglm(model, HDEtest = hde_test) %>%
+    coef()
+  coefficients["geno", ]
 }
+
+regress_all <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) {
+  result <- geno %>%
+    parallel::mclapply(
+      FUN = regress,
+      pheno = data_f$oest.norm,
+      covars = covars,
+      detection_limit = detection_limit,
+      hde_test = hde_test,
+      mc.cores = 8) %>%
+    do.call("rbind", .) %>%
+    as.data.table(keep.rownames="SNP")
+
+  snp_split <- stringr::str_split_fixed(result$SNP, "_", 2)
+  result[, ID := snp_split[,1]]
+  result[, A1 := snp_split[,2]]
+  result[, SNP := NULL]
+  data.table::setcolorder(result, c("ID", "A1"))
+  result
+}
+
 
 genotypes <- list.files(path="genotypes", pattern="raw", full.names=TRUE) %>%
   lapply(data.table::fread) %>%
@@ -41,18 +66,14 @@ predictor_cols_f <- !(colnames(data_f) %in% not_predictors)
 predictors_f <- data_f[, ..predictor_cols_f] %>% as.matrix()
 
 # Regression happens here
-models <- genotypes_f[, -c(1,2)] %>%
-  parallel::mclapply(regress, data_f$oest.norm, predictors_f, detection_limit, mc.cores=8)
-summaries <- parallel::mclapply(models, VGAM::summaryvglm, HDEtest=FALSE, mc.cores=8)
-result <- lapply(summaries, coef) %>%
-  lapply(extract, "geno", ) %>%
-  do.call("rbind", .) %>%
-  as.data.table(keep.rownames="SNP")
 
-# Make the results pretty
-snp_split <- str_split_fixed(result$SNP, "_", 2)
-result[, ID := snp_split[,1]]
-result[, A1 := snp_split[,2]]
+result <- regress_all(
+  geno = genotypes_f,
+  pheno = pheno,
+  covars = predictors_f,
+  detection_limit = detection_limit,
+  hde_test = FALSE
+  )
 
 # Write results to disk
 write.table(result, "out/results_f.txt", sep="\t", quote=F, row.names=F)
