@@ -16,7 +16,7 @@ regress_snp <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) 
   coefficients <-
     VGAM::vglm(
       pheno ~ geno + covars,
-      tobit(Lower=detection_limit)) %>%
+      VGAM::tobit(Lower=detection_limit)) %>%
     VGAM::summaryvglm(model, HDEtest = hde_test) %>%
     stats::coef()
   coefficients["geno", ]
