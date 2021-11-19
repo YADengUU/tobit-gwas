@@ -17,7 +17,7 @@ regress_snp <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) 
     VGAM::vglm(
       pheno ~ geno + covars,
       VGAM::tobit(Lower=detection_limit)) %>%
-    VGAM::summaryvglm(model, HDEtest = hde_test) %>%
+    VGAM::summaryvglm(HDEtest = hde_test) %>%
     stats::coef()
   coefficients["geno", ]
 }
@@ -69,7 +69,7 @@ uninteresting_columns <- c("MAT", "PAT", "SEX", "PHENOTYPE")
 #' @return A [data.table::data.table] with only IDs and dosages remaining
 extract_genotype_columns <- function(genotype_table){
   interesting_columns <- !(colnames(genotype_table) %in% uninteresting_columns)
-  genotype_table[, ..interesting_columns]
+  genotype_table[, interesting_columns, with=FALSE]
 }
 
 
