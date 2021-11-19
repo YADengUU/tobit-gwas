@@ -24,7 +24,8 @@ regress_snp <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) 
 
 #' Perform a Tobit regression on all SNPs
 #'
-#' Performs a censored-regression association study on all provided SNPs
+#' Performs a censored-regression association study on all provided SNPs.
+#' This is parallelized by default using [parallel::mclapply].
 #'
 #' @param geno Genotype matrix of the cohort. Rows are individuals
 #' @param pheno A numeric vector of phenotypes for all individuals.
@@ -33,10 +34,11 @@ regress_snp <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) 
 #' @param detection_limit The detection limit of the phenotype
 #' @param hde_test If TRUE, a test for the Hauck-Donner effect will be performed.
 #' The result is currently not returned
+#' @param mc.cores The number of cores to use for parallelization, see [parallel::mclapply].
 #'
 #' @return A [data.table::data.table] containing regression results for all SNPs
 #' @export
-regress_all <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) {
+regress_all <- function(geno, pheno, covars, detection_limit, hde_test = FALSE, mc.cores = getOption("mc.cores", 2L)) {
   result <- geno %>%
     parallel::mclapply(
       FUN = regress,
@@ -44,7 +46,7 @@ regress_all <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) 
       covars = covars,
       detection_limit = detection_limit,
       hde_test = hde_test,
-      mc.cores = 8) %>%
+      mc.cores = mc.cores) %>%
     do.call("rbind", .) %>%
     as.data.table(keep.rownames="SNP")
 
