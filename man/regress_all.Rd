@@ -4,7 +4,14 @@
 \alias{regress_all}
 \title{Perform a Tobit regression on all SNPs}
 \usage{
-regress_all(geno, pheno, covars, detection_limit, hde_test = FALSE)
+regress_all(
+  geno,
+  pheno,
+  covars,
+  detection_limit,
+  hde_test = FALSE,
+  mc.cores = getOption("mc.cores", 2L)
+)
 }
 \arguments{
 \item{geno}{Genotype matrix of the cohort. Rows are individuals}
@@ -18,10 +25,13 @@ Measurements below detection limit must be set to a value less than or equal det
 
 \item{hde_test}{If TRUE, a test for the Hauck-Donner effect will be performed.
 The result is currently not returned}
+
+\item{mc.cores}{The number of cores to use for parallelization, see \link[parallel:mclapply]{parallel::mclapply}.}
 }
 \value{
 A \link[data.table:data.table]{data.table::data.table} containing regression results for all SNPs
 }
 \description{
-Performs a censored-regression association study on all provided SNPs
+Performs a censored-regression association study on all provided SNPs.
+This is parallelized by default using \link[parallel:mclapply]{parallel::mclapply}.
 }
