@@ -35,14 +35,14 @@ extract_genotype_columns <- function(genotype_table){
   genotype_table[, ..interesting_columns]
 }
 
-collect_genotypes <- function(files) {
+read_genotypes <- function(files) {
   files %>%
     lapply(data.table::fread) %>%
     lapply(extract_genotype_columns) %>%
     Reduce(f=merge)
 }
 
-read_raw_genotypes <- function(directory) {
+read_genotype_directory <- function(directory) {
   list.files(path=directory, path="raw", full.names = T) %>% collect_genotypes()
 }
 
