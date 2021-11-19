@@ -1,5 +1,4 @@
-genotypes <- list.files(path="genotypes", pattern="raw", full.names=TRUE) %>%
-  collect_genotypes()
+genotypes <- read_genotype_directory("genotypes")
 
 covariates_f <- data.table::fread("~/hormone_gwas/females/covariates.txt")
 
@@ -67,7 +66,6 @@ pheno_m <- pheno[IID %in% common_ids_m]
 
 #  The normalized detection limit is different for men b.c. the distribution is different
 detection_limit_m <- pheno_m[oest == 175, max(oest.norm)]
-
 
 predictor_cols_m <- !(colnames(data_m) %in% not_predictors)
 predictors_m <- data_m[, ..predictor_cols_m] %>% as.matrix()
