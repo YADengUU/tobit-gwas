@@ -1,3 +1,8 @@
+library(tobitGwas)
+library(data.table)
+library(magrittr)
+library(stringr)
+
 genotypes <- read_genotype_directory("genotypes")
 
 covariates_f <- data.table::fread("~/hormone_gwas/females/covariates.txt")
@@ -20,7 +25,7 @@ pheno <- data.table::fread("pheno.txt")
 # Keep individuals with complete data, only
 common_ids_f <- genotypes$IID %>%
   intersect(covars_f_transformed$IID) %>%
-  intersect(pheno)
+  intersect(phenoIID)
 genotypes_f <- genotypes[IID %in% common_ids_f]
 covars_f_transformed <- covars_f_transformed[IID %in% common_ids_f]
 pheno_f <- pheno[IID %in% common_ids_f]
@@ -42,7 +47,7 @@ predictors_f <- covars_f_transformed[, ..predictor_cols_f] %>% as.matrix()
 
 result <- regress_all(
   geno = genotypes_f[, -c(1,2)],
-  pheno = pheno$oest.norm,
+  pheno = pheno_f$oest.norm,
   covars = predictors_f,
   detection_limit = detection_limit,
   hde_test = FALSE
