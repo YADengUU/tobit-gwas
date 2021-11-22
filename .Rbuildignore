@@ -1,5 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^R/estradiol_gwas\.R$
-^ignore/estradiol_gwas\.R$
+^estradiol_gwas/estradiol_gwas\.R$
 ^LICENSE\.md$
