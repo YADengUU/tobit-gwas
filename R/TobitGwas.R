@@ -13,13 +13,11 @@
 #' @return A named vector containing estimate, standard error, z and p values of the regression.
 #' @export
 regress_snp <- function(geno, pheno, covars, detection_limit, hde_test = FALSE) {
-  coefficients <-
-    VGAM::vglm(
-      pheno ~ geno + covars,
-      VGAM::tobit(Lower=detection_limit)) %>%
-    VGAM::summaryvglm(HDEtest = hde_test) %>%
-    stats::coef()
-  coefficients["geno", ]
+  result <- VGAM::vglm(
+    pheno ~ geno + covars,
+    VGAM::tobit(Lower=detection_limit)) %>%
+  VGAM::summaryvglm(HDEtest = hde_test)
+  result@coef3["geno", ]
 }
 
 #' Perform a Tobit regression on all SNPs
@@ -48,7 +46,7 @@ regress_all <- function(geno, pheno, covars, detection_limit, hde_test = FALSE, 
       hde_test = hde_test,
       mc.cores = mc.cores) %>%
     do.call("rbind", .) %>%
-    as.data.table(keep.rownames="SNP")
+    data.table::as.data.table(keep.rownames="SNP")
 
   snp_split <- stringr::str_split_fixed(result$SNP, "_", 2)
   result[, ID := snp_split[,1]]
@@ -96,7 +94,7 @@ read_genotypes <- function(files) {
   files %>%
     lapply(data.table::fread) %>%
     lapply(extract_genotype_columns) %>%
-    Reduce(f=outer_join())
+    Reduce(f=outer_join)
 }
 
 #' Reads a directory of raw genotype files.
