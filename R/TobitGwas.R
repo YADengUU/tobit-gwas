@@ -137,7 +137,7 @@ rank_transform <- function(values, detection_limit = min(values, na.rm = TRUE), 
     values[is.na(values)] <- detection_limit
   }
   defined <- values[!is.na(values)]
-  tmp.1 <- (order(defined)-0.5)/length(defined)
+  tmp.1 <- (rank(defined)-0.5)/length(defined)
   tmp.2 <- rep(NA,length(values))
   tmp.2[!is.na(values)] <- tmp.1
   transformed <- stats::qnorm(tmp.2,0,1)
